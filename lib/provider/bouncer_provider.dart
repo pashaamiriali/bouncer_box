@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:bouncer_box/helper/bounce_helper.dart';
 import 'package:bouncer_box/model/wall_model.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +7,7 @@ class BouncerProvider extends ChangeNotifier {
   late final double boxWidth;
   late final double boxHight;
   late double slope;
+  late bool directionIsAbsoluteVertical=false;
   late bool isTargetBasedOnX;
   late double distanceToTarget;
   late double previousY;
@@ -102,16 +101,30 @@ class BouncerProvider extends ChangeNotifier {
 
   void setDragDirection(DragDirection dragDirection) {
     this.dragDirection = dragDirection;
+    print('drag direction $dragDirection');
     notifyListeners();
   }
 
   void setDragVelocity(double velocity) {
     this.velocity = velocity;
+    print('velocity $velocity');
     notifyListeners();
   }
 
   void setDragSlope(double slope) {
+    if (slope == double.nan) {
+      directionIsAbsoluteVertical = true;
+      slope = -1000000;
+    }
     this.slope = slope;
+    print('slope $slope');
     notifyListeners();
+  }
+
+  void setCurrentPosition(Offset currentPosition) {
+    previousX = currentX;
+    previousY = currentY;
+    currentX = currentPosition.dx;
+    currentY = currentPosition.dy;
   }
 }

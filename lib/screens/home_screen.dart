@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:bouncer_box/helper/animation_helper.dart';
 import 'package:bouncer_box/helper/gesture_helper.dart';
 import 'package:bouncer_box/provider/bouncer_provider.dart';
 import 'package:flutter/material.dart';
@@ -21,14 +24,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer<BouncerProvider>(builder: (context, provider, child) {
-      return CustomGestureDetector(
-        provider: provider,
-        onGesture: () {
-          //TODO: handle animation change
-        },
-        child: SafeArea(
-          child: Scaffold(
-            body: AnimatedBox(
+      return SafeArea(
+        child: Scaffold(
+          body: SizedBox(
+            height: provider.walls.bottom + provider.boxHight,
+            width: provider.walls.right + provider.boxWidth,
+            child: AnimatedBox(
               provider: provider,
             ),
           ),
@@ -57,36 +58,68 @@ class _AnimatedBoxState extends State<AnimatedBox>
   void initState() {
     super.initState();
     _controller =
-        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+        AnimationController(duration: const Duration(seconds: 3), vsync: this);
     _animation = Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
         .animate(_controller);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Offset currentPosition =
+            getXYFromAnimationValue(widget.provider, _animation.value);
+        findTheWallReached(widget.provider);
+
+        setState(() {
+          _animation =
+              Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
+                  .animate(_controller);
+        });
+        widget.provider.setCurrentPosition(currentPosition);
+        _controller.reset();
+        _controller.forward();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    double x = 0;
-    double y = 0;
-    if (widget.provider.isTargetBasedOnX) {
-      x = widget.provider.currentX + widget.provider.distanceToTarget;
-      y = widget.provider.currentY +
-          widget.provider.distanceToTarget * widget.provider.slope;
-    } else {
-      x = widget.provider.currentX +
-          widget.provider.distanceToTarget / widget.provider.slope;
-      y = widget.provider.currentY + widget.provider.distanceToTarget;
-    }
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(x, y),
-          child: Container(
-            width: widget.provider.boxWidth,
-            height: widget.provider.boxWidth,
-            color: Colors.red,
+    return Stack(
+      children: [
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            print(_animation.value);
+            Offset currentPosition = getXYFromAnimationValue(
+              widget.provider,
+              _animation.value,
+            );
+            return Transform.translate(
+              offset: currentPosition,
+              child: Container(
+                width: widget.provider.boxWidth,
+                height: widget.provider.boxWidth,
+                color: Colors.red,
+              ),
+            );
+          },
+        ),
+        CustomGestureDetector(
+          provider: widget.provider,
+          onGesture: () {
+            setDistanceToTargetForGesture(widget.provider, _animation.value);
+            print('distance to target: ${widget.provider.distanceToTarget}');
+            print('isTargetBasedOnX: ${widget.provider.isTargetBasedOnX}');
+            setState(() {
+              _animation =
+                  Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
+                      .animate(_controller);
+            });
+            _controller.forward();
+          },
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
           ),
-        );
-      },
+        )
+      ],
     );
   }
 }
