@@ -1,3 +1,4 @@
+import 'package:bouncer_box/helper/gesture_helper.dart';
 import 'package:bouncer_box/provider/bouncer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,8 +21,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer<BouncerProvider>(builder: (context, provider, child) {
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
+      return CustomGestureDetector(
+        provider: provider,
+        onGesture: () {
+          //TODO: handle animation change
+        },
         child: SafeArea(
           child: Scaffold(
             body: AnimatedBox(

@@ -1,8 +1,10 @@
+import 'dart:html';
+
+import 'package:bouncer_box/helper/bounce_helper.dart';
 import 'package:bouncer_box/model/wall_model.dart';
 import 'package:flutter/cupertino.dart';
 
-class BouncerProvider 
-  extends ChangeNotifier {
+class BouncerProvider extends ChangeNotifier {
   late final Walls walls;
   late final double boxWidth;
   late final double boxHight;
@@ -13,6 +15,8 @@ class BouncerProvider
   late double previousX;
   late double currentY;
   late double currentX;
+  late DragDirection dragDirection;
+  late double velocity;
   void _init(
     Walls walls,
     double boxWidth,
@@ -24,6 +28,8 @@ class BouncerProvider
     double previousX,
     double currentY,
     double currentX,
+    DragDirection dragDirection,
+    double velocity,
   ) {
     this.walls = walls;
     this.boxWidth = boxWidth;
@@ -35,6 +41,8 @@ class BouncerProvider
     this.previousX = previousX;
     this.currentY = currentY;
     this.currentX = currentX;
+    this.dragDirection = dragDirection;
+    this.velocity = velocity;
   }
 
   static BouncerProvider init({
@@ -66,6 +74,8 @@ class BouncerProvider
       previousX,
       currentY,
       currentX,
+      DragDirection.stationary,
+      0.0,
     );
     return bouncerProvider;
   }
@@ -87,6 +97,21 @@ class BouncerProvider
 
   void reverseSlope() {
     slope *= -1;
+    notifyListeners();
+  }
+
+  void setDragDirection(DragDirection dragDirection) {
+    this.dragDirection = dragDirection;
+    notifyListeners();
+  }
+
+  void setDragVelocity(double velocity) {
+    this.velocity = velocity;
+    notifyListeners();
+  }
+
+  void setDragSlope(double slope) {
+    this.slope = slope;
     notifyListeners();
   }
 }

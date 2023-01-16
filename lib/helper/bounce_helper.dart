@@ -3,7 +3,7 @@ import 'package:bouncer_box/infrastructure/exceptions.dart';
 import 'package:flutter/material.dart';
 
 const int maxDigits = 2;
-enum MoveDirection { topLeft, topRight, bottomLeft, bottomRight, stationary }
+enum DragDirection { topLeft, topRight, bottomLeft, bottomRight, stationary }
 
 double getY(double x, double slope) {
   return double.parse((x * slope).toStringAsFixed(maxDigits));
