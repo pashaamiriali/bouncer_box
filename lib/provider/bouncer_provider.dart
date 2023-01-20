@@ -1,3 +1,4 @@
+import 'package:bouncer_box/helper/animation_helper.dart';
 import 'package:bouncer_box/helper/bounce_helper.dart';
 import 'package:bouncer_box/model/wall_model.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,7 +8,7 @@ class BouncerProvider extends ChangeNotifier {
   late final double boxWidth;
   late final double boxHight;
   late double slope;
-  late bool directionIsAbsoluteVertical=false;
+  late bool directionIsAbsoluteVertical = false;
   late bool isTargetBasedOnX;
   late double distanceToTarget;
   late double previousY;
@@ -16,6 +17,8 @@ class BouncerProvider extends ChangeNotifier {
   late double currentX;
   late DragDirection dragDirection;
   late double velocity;
+  //in milliseconds
+  int animationDuration = 100;
   void _init(
     Walls walls,
     double boxWidth,
@@ -91,6 +94,8 @@ class BouncerProvider extends ChangeNotifier {
 
   void setDistanceToTarget(double distanceToTarget) {
     this.distanceToTarget = distanceToTarget;
+    animationDuration =
+        getAnimationDurationBasedOnDistance(velocity, distanceToTarget);
     notifyListeners();
   }
 
@@ -101,13 +106,11 @@ class BouncerProvider extends ChangeNotifier {
 
   void setDragDirection(DragDirection dragDirection) {
     this.dragDirection = dragDirection;
-    print('drag direction $dragDirection');
     notifyListeners();
   }
 
   void setDragVelocity(double velocity) {
     this.velocity = velocity;
-    print('velocity $velocity');
     notifyListeners();
   }
 
@@ -117,7 +120,6 @@ class BouncerProvider extends ChangeNotifier {
       slope = -1000000;
     }
     this.slope = slope;
-    print('slope $slope');
     notifyListeners();
   }
 
@@ -126,5 +128,6 @@ class BouncerProvider extends ChangeNotifier {
     previousY = currentY;
     currentX = currentPosition.dx;
     currentY = currentPosition.dy;
+    notifyListeners();
   }
 }

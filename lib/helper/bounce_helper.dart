@@ -3,6 +3,7 @@ import 'package:bouncer_box/infrastructure/exceptions.dart';
 import 'package:flutter/material.dart';
 
 const int maxDigits = 2;
+
 enum DragDirection { topLeft, topRight, bottomLeft, bottomRight, stationary }
 
 double getY(double x, double slope) {
@@ -30,6 +31,7 @@ Offset getInitialPosition(
 }
 
 void leftWallReached(BouncerProvider provider) {
+  provider.reverseSlope();
   if (goingUp(provider)) {
     if (withGoingToOppositeHorizontalWallWillCrossTopWall(
       provider,
@@ -49,6 +51,7 @@ void leftWallReached(BouncerProvider provider) {
     )) {
       goToBottomWall(provider);
     } else {
+      // provider.reverseSlope();
       goToRightWall(provider);
     }
   }
@@ -92,6 +95,7 @@ void topWallReached(BouncerProvider provider) {
     goToBottomWall(provider);
   } else {
     //going left
+    provider.reverseSlope();
     if (withGoingToOppositeVerticalWallWillCrossLeftWall(
         provider, provider.walls.bottom)) {
       goToLeftWall(provider);
@@ -103,6 +107,7 @@ void topWallReached(BouncerProvider provider) {
 
 void bottomWallReached(BouncerProvider provider) {
   if (goingRight(provider)) {
+    provider.reverseSlope();
     if (withGoingToOppositeVerticalWallWillCrossRightWall(
         provider, provider.walls.top)) {
       goToRightWall(provider);
@@ -124,6 +129,7 @@ void bottomWallReached(BouncerProvider provider) {
 }
 
 void goToBottomWall(BouncerProvider provider) {
+
   provider.setTargetOnY();
   provider.setDistanceToTarget(
       getDistanceToTarget(provider.currentY, provider.walls.bottom));
@@ -142,6 +148,7 @@ void goToRightWall(BouncerProvider provider) {
 }
 
 void goToLeftWall(BouncerProvider provider) {
+
   provider.setTargetOnX();
   provider.setDistanceToTarget(
       getDistanceToTarget(provider.currentX, provider.walls.left));
@@ -157,7 +164,7 @@ bool goingRight(BouncerProvider provider) {
 }
 
 bool stayingAtTheSameHeight(BouncerProvider provider) {
-  return provider.previousY == provider.currentY;
+  return provider.slope == 0;
 }
 
 bool stayingAtTheSameWidth(BouncerProvider provider) {

@@ -49,14 +49,15 @@ void findTheWallReached(BouncerProvider provider) {
   double currentX = 0;
   double currentY = 0;
   if (provider.isTargetBasedOnX) {
-    currentX == provider.distanceToTarget + provider.currentX;
-    currentY = (provider.distanceToTarget * provider.slope) + provider.currentX;
+    currentX = provider.distanceToTarget + provider.currentX;
+    currentY = (provider.distanceToTarget * provider.slope) + provider.currentY;
   } else {
     currentX = (provider.distanceToTarget / provider.slope) + provider.currentX;
-    currentY == provider.distanceToTarget + provider.currentY;
+    currentY = provider.distanceToTarget + provider.currentY;
   }
   currentX = double.parse(currentX.toStringAsFixed(maxDigits));
   currentY = double.parse(currentY.toStringAsFixed(maxDigits));
+  provider.setCurrentPosition(Offset(currentX, currentY));
   if (currentX == provider.walls.left) {
     leftWallReached(provider);
   } else if (currentX == provider.walls.right) {
@@ -66,6 +67,46 @@ void findTheWallReached(BouncerProvider provider) {
   } else if (currentY == provider.walls.bottom) {
     bottomWallReached(provider);
   }
+}
+
+int getAnimationDurationBasedOnDistance(
+    double velocity, double distanceToTarget) {
+  distanceToTarget = _regulateDistanceToTargetForDuration(distanceToTarget);
+  velocity = _regulateVelocityForDuration(velocity);
+
+  //distance to target is in pixels
+  //velocity is in pixels per second
+  //we want milliseconds
+  int duration = ((distanceToTarget / velocity) * 1000).toInt();
+  //avoiding stack overflow
+  if (duration < 100) {
+    duration = 100;
+  } else if (duration > 20000) {
+    duration = 20000;
+  }
+  return duration;
+}
+
+double _regulateVelocityForDuration(double velocity) {
+  if (velocity < 0) {
+    velocity *= -1;
+  } else if (velocity == 0) {
+    velocity = 1;
+  } else if (velocity == double.nan) {
+    velocity = 1;
+  }
+  return velocity;
+}
+
+double _regulateDistanceToTargetForDuration(double distanceToTarget) {
+  if (distanceToTarget < 0) {
+    distanceToTarget *= -1;
+  } else if (distanceToTarget == 0) {
+    distanceToTarget = 1;
+  } else if (distanceToTarget == double.nan) {
+    distanceToTarget = 1;
+  }
+  return distanceToTarget;
 }
 
 void _handleBottomRight(BouncerProvider provider) {
@@ -78,6 +119,7 @@ void _handleBottomRight(BouncerProvider provider) {
 }
 
 void _handleBottomLeft(BouncerProvider provider) {
+  provider.reverseSlope();
   if (withGoingToOppositeHorizontalWallWillCrossBottomWall(
       provider, provider.walls.left)) {
     goToBottomWall(provider);

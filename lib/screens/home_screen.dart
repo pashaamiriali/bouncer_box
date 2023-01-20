@@ -1,8 +1,8 @@
-import 'dart:async';
-
 import 'package:bouncer_box/helper/animation_helper.dart';
 import 'package:bouncer_box/helper/gesture_helper.dart';
 import 'package:bouncer_box/provider/bouncer_provider.dart';
+import 'package:bouncer_box/screens/widgets/bouncer_image_box.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,26 +16,66 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+  late final bool _showMeasures;
   @override
   void initState() {
     super.initState();
+    _showMeasures = kDebugMode;
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<BouncerProvider>(builder: (context, provider, child) {
-      return SafeArea(
-        child: Scaffold(
-          body: SizedBox(
-            height: provider.walls.bottom + provider.boxHight,
-            width: provider.walls.right + provider.boxWidth,
-            child: AnimatedBox(
-              provider: provider,
+      var screenSize = MediaQuery.of(context).size;
+      return Stack(
+        children: [
+          SafeArea(
+            child: Scaffold(
+              body: SizedBox(
+                height: provider.walls.bottom + provider.boxHight,
+                width: provider.walls.right + provider.boxWidth,
+                child: AnimatedBox(
+                  provider: provider,
+                ),
+              ),
             ),
           ),
-        ),
+          ...buildScreenMeasures(screenSize),
+        ],
       );
     });
+  }
+
+  List<Widget> buildScreenMeasures(Size screenSize) {
+    if (!_showMeasures) return [];
+    return [
+      ...List.generate((screenSize.height / 50).round(), (index) {
+        var height = screenSize.height - (index + 1) * 50;
+        return Positioned(
+          top: height,
+          child: Text(
+            height.toStringAsFixed(2),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 8,
+            ),
+          ),
+        );
+      }),
+      ...List.generate((screenSize.width / 50).round(), (index) {
+        var width = screenSize.width - (index + 1) * 50;
+        return Positioned(
+          left: width,
+          child: Text(
+            width.toStringAsFixed(2),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 8,
+            ),
+          ),
+        );
+      }),
+    ];
   }
 }
 
@@ -57,8 +97,9 @@ class _AnimatedBoxState extends State<AnimatedBox>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(duration: const Duration(seconds: 3), vsync: this);
+    _controller = AnimationController(
+        duration: Duration(milliseconds: widget.provider.animationDuration),
+        vsync: this);
     _animation = Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
         .animate(_controller);
     _controller.addStatusListener((status) {
@@ -71,6 +112,8 @@ class _AnimatedBoxState extends State<AnimatedBox>
           _animation =
               Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
                   .animate(_controller);
+          _controller.duration =
+              Duration(milliseconds: widget.provider.animationDuration);
         });
         widget.provider.setCurrentPosition(currentPosition);
         _controller.reset();
@@ -86,17 +129,15 @@ class _AnimatedBoxState extends State<AnimatedBox>
         AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            print(_animation.value);
             Offset currentPosition = getXYFromAnimationValue(
               widget.provider,
               _animation.value,
             );
             return Transform.translate(
               offset: currentPosition,
-              child: Container(
+              child: BouncerImageBox(
                 width: widget.provider.boxWidth,
-                height: widget.provider.boxWidth,
-                color: Colors.red,
+                height: widget.provider.boxHight,
               ),
             );
           },
@@ -105,12 +146,12 @@ class _AnimatedBoxState extends State<AnimatedBox>
           provider: widget.provider,
           onGesture: () {
             setDistanceToTargetForGesture(widget.provider, _animation.value);
-            print('distance to target: ${widget.provider.distanceToTarget}');
-            print('isTargetBasedOnX: ${widget.provider.isTargetBasedOnX}');
             setState(() {
               _animation =
                   Tween<double>(begin: 0, end: widget.provider.distanceToTarget)
                       .animate(_controller);
+              _controller.duration =
+                  Duration(milliseconds: widget.provider.animationDuration);
             });
             _controller.forward();
           },

@@ -40,7 +40,6 @@ class _CustomGestureDetectorState extends State<CustomGestureDetector> {
             //cancel drag because of not enough data
             return;
           }
-          print('update function continued');
           if (details.delta.dx > 0) {
             if (details.delta.dy > 0) {
               widget.provider.setDragDirection(DragDirection.bottomRight);
@@ -60,7 +59,6 @@ class _CustomGestureDetectorState extends State<CustomGestureDetector> {
             //cancel drag because of not enough data
             return;
           }
-          print('function continued');
           double slope =
               getSlopeBasedOnDXDY(latestX - initialX, latestY - initialY);
           widget.provider.setDragSlope(slope);
@@ -85,7 +83,6 @@ double getGeneralVelocityBasedOnXYSlope(double vX, double vY, double slope) {
     return vY;
   } else {
     //TODO: change this to a more accurate speed later
-    print('vX $vX vY $vY');
     return max(vX, vY);
   }
 }
@@ -96,6 +93,12 @@ double getSlopeBasedOnDXDY(double dX, double dY) {
   } else if (dY == 0 && (dX > 0 || dX < 0)) {
     return 0;
   } else {
-    return dY / dX;
+    if (dY > 0 && dX < 0) {
+      return (dY / dX) * -1;
+    } else if (dY < 0 && dX < 0) {
+      return (dY / dX) * -1;
+    } else {
+      return dY / dX;
+    }
   }
 }
