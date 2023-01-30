@@ -55,6 +55,7 @@ void findTheWallReached(BouncerProvider provider) {
     currentX = (provider.distanceToTarget / provider.slope) + provider.currentX;
     currentY = provider.distanceToTarget + provider.currentY;
   }
+  provider.setDragVelocity(provider.velocity / 2);
   currentX = double.parse(currentX.toStringAsFixed(maxDigits));
   currentY = double.parse(currentY.toStringAsFixed(maxDigits));
   provider.setCurrentPosition(Offset(currentX, currentY));
